@@ -22,7 +22,10 @@
   [& _]
   (let [config (load-config)]
     (reset! system (component/start (kc-system/system (:rabbitmq config))))
-    ;; This would be where immutant/at-exit goes
+    ;; This would be where something like immutant/at-exit goes;
+    ;; the core.async stuff here is just a simple way to start this
+    ;; up and have a way to shut it down in order to play with it
+    ;; as though it were a service running independently.
     (async/go
         (let [shut-it-down (async/<! shutdown-chan)]
           (println "Got the shutdown signal! Shutting down.")
