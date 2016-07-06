@@ -1,10 +1,6 @@
 # kehaar-component
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+Proposal for wrapping up kehaar in some component love to eliminate some boilerplate.
 
 ## License
 
