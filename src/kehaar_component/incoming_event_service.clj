@@ -12,6 +12,7 @@
 
 (def config-spec
   {:type :incoming-event
+   :queue-name "incoming-event-service-queue-name"
 
    ;; RMQ specific config here, unique name, basically topic within events channel
    :routing-key "String" 
@@ -28,21 +29,21 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting IncomingEventService " (first config))
+    (println ";; Starting IncomingEventService " (:queue-name config))
 
-    (let [[queue-name service-config] config
+    (let [{:keys [queue-name routing-key timeout handler-fn]} config
           incoming-events-chan (async/chan 1000) ; make buffer-size configurable?
 
           service (-> (:connection rabbitmq)
                       (wire-up/incoming-events-channel
                        queue-name
-                       service-config
+                       config
                        "events" ; topic exchange name
-                       (:routing-key service-config)
+                       routing-key
                        incoming-events-chan
-                       (or (:timeout service-config) 2000)))
+                       (or timeout 2000)))
           
-          handler-fn' (or (:handler-fn service-config) shared/handler-no-op)]
+          handler-fn' (or handler-fn shared/handler-no-op)]
 
       (wire-up/start-event-handler! incoming-events-chan
                                     (shared/handle-errors handler-fn'))
@@ -50,7 +51,7 @@
       (assoc component :service service :incoming-events-chan incoming-events-chan)))
 
   (stop [component]
-    (println ";; Stopping IncomingEventService " (first config))
+    (println ";; Stopping IncomingEventService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! incoming-events-chan)

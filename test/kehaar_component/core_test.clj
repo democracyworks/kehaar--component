@@ -29,44 +29,44 @@
    :max-retries 5})
 
 (def incoming-service-config
-  {:config ["direct-exchange-queue-name"
-            {:type :incoming
-             :handler-fn #(-> % (assoc :status :ok))
-             :exclusive false
-             :durable true
-             :auto-delete false}]})
+  {:config {:type :incoming
+            :queue-name "direct-exchange-queue-name"
+            :handler-fn #(-> % (assoc :status :ok))
+            :exclusive false
+            :durable true
+            :auto-delete false}})
 
 (def external-service-config
   (-> incoming-service-config
-      (assoc-in [:config 1 :type] :external)
-      (update-in [:config 1] dissoc :handler-fn)))
+      (assoc-in [:config :type] :external)
+      (update :config dissoc :handler-fn)))
 
 (def incoming-events-stub-chan1 (async/chan))
 (def incoming-events-stub-chan2 (async/chan))
 
 (def incoming-event-service1-config
-  {:config ["topic-exchange-consume-queue1"
-            {:type :incoming-event
-             :handler-fn #(async/put! incoming-events-stub-chan1 %)
-             :routing-key "test.events"
-             :exclusive false
-             :durable true
-             :auto-delete false}]})
+  {:config {:type :incoming-event
+            :queue-name "topic-exchange-consume-queue1"
+            :handler-fn #(async/put! incoming-events-stub-chan1 %)
+            :routing-key "test.events"
+            :exclusive false
+            :durable true
+            :auto-delete false}})
 
 (def incoming-event-service2-config
-  {:config ["topic-exchange-consume-queue2"
-            {:type :incoming-event
-             :handler-fn #(async/put! incoming-events-stub-chan2 %)
-             :routing-key "test.events"
-             :exclusive false
-             :durable true
-             :auto-delete false}]})
+  {:config {:type :incoming-event
+            :queue-name "topic-exchange-consume-queue2"
+            :handler-fn #(async/put! incoming-events-stub-chan2 %)
+            :routing-key "test.events"
+            :exclusive false
+            :durable true
+            :auto-delete false}})
 
 (def outgoing-event-service-config
   (-> incoming-event-service1-config
-      (assoc [0] "topic-exchange-produce-queue")
-      (assoc-in [:config 1 :type] :outgoing-event)
-      (update-in [:config 1] dissoc :handler-fn)))
+      (assoc :queue-name "topic-exchange-produce-queue")
+      (assoc-in [:config :type] :outgoing-event)
+      (update :config dissoc :handler-fn)))
 
 
 (deftest ^:rabbitmq kehaar-component-services

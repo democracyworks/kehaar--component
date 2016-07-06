@@ -13,19 +13,14 @@
 (defn- inject-handler!
   [config]
   (try
-    (update-in
-     config
-     [1 :handler-fn]
-     (fnil #(-> % symbol find-var)
-           "kehaar-component.incoming-service/handler-no-op"))
+    (update config :handler-fn
+            (fnil #(-> % symbol find-var)
+                  "kehaar-component.incoming-service/handler-no-op"))
     (catch Exception e
-      (log/warn "Got a bad handler in the config: "
-                (get-in config [1 :handler-fn]))
-      (assoc-in config [1 :handler-fn] shared/handler-no-op))))
+      (log/warn "Got a bad handler in the config: " (:handler-fn config))
+      (assoc config :handler-fn shared/handler-no-op))))
 
-(defmulti gen-component-map
-  (fn [[queue-name config]]
-    (:type config)))
+(defmulti gen-component-map :type)
 
 (defmethod gen-component-map :incoming
   [config]
@@ -54,7 +49,7 @@
 (defn has-event-exchange?
   [system-map]
   (->> (take-nth 2 (rest system-map))
-       (filter #(#{:incoming-event :outgoing-event} (get-in % [:config 1 :type])))
+       (filter #(#{:incoming-event :outgoing-event} (get-in % [:config :type])))
        seq
        boolean))
 
@@ -65,16 +60,19 @@
          (conj system-map :events-exchange))
     system-map))
 
+(defn maybe-inject-kehaar-component-map
+  [components [queue-name queue-config]]
+  (if-let [component (->> (assoc queue-config :queue-name queue-name)
+                          gen-component-map)]
+    (do (println "? " component)
+    (conj components (keyword queue-name) component))
+    components))
+
 (defn- gen-system-map
   [{:keys [connection max-retries queues topics]}]
   (let [rmq-base [:rabbitmq (krmq/new-kehaar-rabbitmq connection max-retries)]]
     (->> queues
-         (reduce
-          (fn [components queue-config]
-            (if-let [config (gen-component-map queue-config)]
-              (conj components (keyword (first queue-config)) config)
-              components))
-          rmq-base)
+         (reduce maybe-inject-kehaar-component-map rmq-base)
          (maybe-add-events-exchange))))
 
 (defn system [config-options]

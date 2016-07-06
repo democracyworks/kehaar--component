@@ -13,6 +13,7 @@
 (def config-spec
   {
    :type :outgoing-event
+   :queue-name "outgoing-event-service-queue-name"
 
    ;; RMQ specific config here, unique name, basically topic within events channel
    :routing-key "String"
@@ -25,23 +26,21 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting OutgoingEventService " (first config))
+    (println ";; Starting OutgoingEventService " (:queue-name config))
 
-    (let [[queue-name service-config] config
-          outgoing-events-chan (async/chan
-                                (or (:outgoing-events-chan-buffer service-config)
-                                    1000))
+    (let [{:keys [queue-name outgoing-events-chan-buffer routing-key]} config
+          outgoing-events-chan (async/chan (or outgoing-events-chan-buffer 1000))
 
           service (-> (:connection rabbitmq)
                       (wire-up/outgoing-events-channel
                        "events"
-                       (:routing-key service-config)
+                       routing-key
                        outgoing-events-chan))]
 
       (assoc component :service service :outgoing-events-chan outgoing-events-chan)))
 
   (stop [component]
-    (println ";; Stopping OutgoingEventService " (first config))
+    (println ";; Stopping OutgoingEventService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! outgoing-events-chan)

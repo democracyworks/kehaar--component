@@ -11,6 +11,7 @@
 
 (def config-spec
   {:type :incoming
+   :queue-name "incoming-service-queue-name"
 
    ;; For the function handling incoming messages.
    :handler-fn #(fn? %) ; function arg.
@@ -24,16 +25,16 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting IncomingService " (first config))
+    (println ";; Starting IncomingService " (:queue-name config))
 
-    (let [[queue-name service-config] config
+    (let [{:keys [queue-name handler-fn]} config
           in-chan (async/chan), out-chan (async/chan)
           service (-> (:connection rabbitmq)
                       (wire-up/incoming-service queue-name
-                                                service-config
+                                                config
                                                 in-chan
                                                 out-chan))
-          handler-fn' (or (:handler-fn service-config) shared/handler-no-op)]
+          handler-fn' (or handler-fn shared/handler-no-op)]
 
       (wire-up/start-responder! in-chan
                                 out-chan
@@ -42,7 +43,7 @@
       (assoc component :service service :in-chan in-chan :out-chan out-chan)))
 
   (stop [component]
-    (println ";; Stopping IncomingService " (first config))
+    (println ";; Stopping IncomingService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! in-chan)

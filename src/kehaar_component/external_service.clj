@@ -10,6 +10,7 @@
 
 (def config-spec
   {:type :external
+   :queue-name "external-service-queue-name"
 
    ;; Kehaar/RabbitMQ config
    :exclusive false
@@ -23,20 +24,20 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting ExternalService " (first config))
+    (println ";; Starting ExternalService " (:queue-name config))
 
-    (let [[queue-name service-config] config
-          msg-chan (async/chan (or (:timeout service-config) 1000))
+    (let [{:keys [queue-name timeout]} config
+          msg-chan (async/chan (or timeout 1000))
           service (-> (:connection rabbitmq)
                       (wire-up/external-service
                        "" ; why is this not the default in kehaar.wire-up?
-                       queue-name service-config 10000 msg-chan))
+                       queue-name config 10000 msg-chan))
           call-external (wire-up/async->fn msg-chan)]
 
       (assoc component :service service :msg-chan msg-chan :call-external call-external)))
 
   (stop [component]
-    (println ";; Stopping ExternalService " (first config))
+    (println ";; Stopping ExternalService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! msg-chan)
