@@ -64,8 +64,7 @@
   [components [queue-name queue-config]]
   (if-let [component (->> (assoc queue-config :queue-name queue-name)
                           gen-component-map)]
-    (do (println "? " component)
-    (conj components (keyword queue-name) component))
+    (conj components (keyword queue-name) component)
     components))
 
 (defn- gen-system-map
