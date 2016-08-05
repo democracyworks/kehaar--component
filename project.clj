@@ -7,4 +7,7 @@
                  [democracyworks/kehaar "0.5.0"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.2.385"]
-                 [prismatic/schema "1.0.3"]])
+                 [prismatic/schema "1.0.3"]]
+  :test-selectors {:default (complement :rabbitmq)
+                   :rabbitmq :rabbitmq
+                   :all (constantly true)})
