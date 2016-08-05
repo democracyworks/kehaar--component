@@ -133,7 +133,20 @@
         (is (rmq/closed? (:service oes-component)))
 
         ;; Close RMQ connection
-        (component/stop rmq-component)))
+        (component/stop rmq-component)))))
 
-    ;; TODO add tests for system
-    ))
+(defn incoming-test-handler
+  [m]
+  {:status :ok})
+
+(def config-fixture
+  {:queues
+   {"incoming-service-queue"
+    {:type :incoming :exclusive false :durable true :auto-delete false
+     :handler-fn 'kehaar-component.core-test/incoming-test-handler}}})
+
+(deftest reads-configuration
+  (testing "handler-fn symbols are resolved as vars"
+    (let [s (system/system config-fixture)]
+      (is (= (incoming-test-handler {})
+             ((get-in s [:incoming-service-queue :config :handler-fn]) {}))))))

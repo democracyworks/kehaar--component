@@ -6,7 +6,7 @@
   :queues
   {"incoming-service-queue"
    {:type :incoming :exclusive false :durable true :auto-delete false
-    :handler-fn "service.handlers/handle-incoming"}
+    :handler-fn service.handlers/handle-incoming}
 
    "external-service-queue"
    {:type :external :exclusive false :durable true :auto-delete false}
@@ -14,7 +14,7 @@
    "incoming-event-queue"
    {:type :incoming-event :exclusive false :durable true :auto-delete false
     :routing-key "some-topic"
-    :handler-fn "service.handlers/handle-incoming-events"}
+    :handler-fn service.handlers/handle-incoming-events}
 
    "outgoing-event-queue"
    {:type :outgoing-event :exclusive false :durable true :auto-delete false
@@ -23,7 +23,7 @@
    "incoming-event-queue-redux"
    {:type :incoming-event :exclusive false :durable true :auto-delete false
     :routing-key "some-topic"
-    :handler-fn "service.handlers/handle-incoming-events-redux"}
+    :handler-fn service.handlers/handle-incoming-events-redux}
 
    } ; queues
 

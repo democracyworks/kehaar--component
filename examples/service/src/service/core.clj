@@ -4,7 +4,8 @@
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [com.stuartsierra.component :as component]
-    [kehaar-component.system :as kc-system]))
+    [kehaar-component.system :as kc-system]
+    [service.handlers])) ; needs to be included so handler vars are found
 
 (defn load-config
   []

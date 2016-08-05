@@ -13,9 +13,8 @@
 (defn- inject-handler!
   [config]
   (try
-    (update config :handler-fn
-            (fnil #(-> % symbol find-var)
-                  "kehaar-component.incoming-service/handler-no-op"))
+    (->> (fnil find-var 'kehaar-component.shared/handler-no-op)
+         (update config :handler-fn))
     (catch Exception e
       (log/warn "Got a bad handler in the config: " (:handler-fn config))
       (assoc config :handler-fn shared/handler-no-op))))
