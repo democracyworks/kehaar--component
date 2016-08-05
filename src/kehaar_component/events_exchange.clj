@@ -1,5 +1,6 @@
 (ns kehaar-component.events-exchange
   (:require
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [kehaar.wire-up :as wire-up]
     [langohr.core :as rmq]))
@@ -15,7 +16,7 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting EventsExchange")
+    (log/info ";; Starting EventsExchange")
 
     (assoc component
            :exchange
@@ -24,7 +25,7 @@
                 "events" "topic" {:durable true :auto-delete false}))))
 
   (stop [component]
-    (println ";; Stopping EventsExchange")
+    (log/info ";; Stopping EventsExchange")
     (when-not (rmq/closed? exchange) (rmq/close exchange))
 
     ;; Remember that if you dissoc one of a record's base fields, you

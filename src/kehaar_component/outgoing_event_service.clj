@@ -26,7 +26,7 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting OutgoingEventService " (:queue-name config))
+    (log/info ";; Starting OutgoingEventService " (:queue-name config))
 
     (let [{:keys [queue-name outgoing-events-chan-buffer routing-key]} config
           outgoing-events-chan (async/chan (or outgoing-events-chan-buffer 1000))
@@ -40,7 +40,7 @@
       (assoc component :service service :outgoing-events-chan outgoing-events-chan)))
 
   (stop [component]
-    (println ";; Stopping OutgoingEventService " (:queue-name config))
+    (log/info ";; Stopping OutgoingEventService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! outgoing-events-chan)

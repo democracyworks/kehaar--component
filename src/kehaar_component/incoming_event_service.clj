@@ -29,7 +29,7 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting IncomingEventService " (:queue-name config))
+    (log/info ";; Starting IncomingEventService " (:queue-name config))
 
     (let [{:keys [queue-name routing-key timeout handler-fn]} config
           incoming-events-chan (async/chan 1000) ; make buffer-size configurable?
@@ -51,7 +51,7 @@
       (assoc component :service service :incoming-events-chan incoming-events-chan)))
 
   (stop [component]
-    (println ";; Stopping IncomingEventService " (:queue-name config))
+    (log/info ";; Stopping IncomingEventService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! incoming-events-chan)

@@ -1,5 +1,6 @@
 (ns kehaar-component.kehaar-rabbitmq
   (:require
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [kehaar.rabbitmq]
     [langohr.core :as rmq]))
@@ -18,14 +19,14 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting RabbitMQ")
+    (log/info ";; Starting RabbitMQ")
 
     (assoc component
            :connection
            (kehaar.rabbitmq/connect-with-retries config max-retries)))
 
   (stop [component]
-    (println ";; Stopping RabbitMQ")
+    (log/info ";; Stopping RabbitMQ")
 
     (when-not (rmq/closed? connection) (rmq/close connection))
 

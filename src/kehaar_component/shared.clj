@@ -26,6 +26,5 @@
 
 (defn handler-no-op
   [msg]
-  (println "No-op here because we didn't get a handler-fn passed in. Message: " msg)
   (log/info "No-op here because we didn't get a handler-fn passed in. Message: " msg)
   {:status :ok})

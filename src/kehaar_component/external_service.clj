@@ -1,6 +1,7 @@
 (ns kehaar-component.external-service
   (:require
     [clojure.core.async :as async]
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [kehaar.wire-up :as wire-up]
     [langohr.core :as rmq]))
@@ -24,7 +25,7 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting ExternalService " (:queue-name config))
+    (log/info ";; Starting ExternalService " (:queue-name config))
 
     (let [{:keys [queue-name timeout]} config
           msg-chan (async/chan (or timeout 1000))
@@ -37,7 +38,7 @@
       (assoc component :service service :msg-chan msg-chan :call-external call-external)))
 
   (stop [component]
-    (println ";; Stopping ExternalService " (:queue-name config))
+    (log/info ";; Stopping ExternalService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! msg-chan)

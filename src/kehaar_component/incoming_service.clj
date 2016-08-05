@@ -1,6 +1,7 @@
 (ns kehaar-component.incoming-service
   (:require
     [clojure.core.async :as async]
+    [clojure.tools.logging :as log]
     [com.stuartsierra.component :as component]
     [kehaar.wire-up :as wire-up]
     [kehaar-component.shared :as shared]
@@ -25,7 +26,7 @@
   component/Lifecycle
 
   (start [component]
-    (println ";; Starting IncomingService " (:queue-name config))
+    (log/info ";; Starting IncomingService " (:queue-name config))
 
     (let [{:keys [queue-name handler-fn]} config
           in-chan (async/chan), out-chan (async/chan)
@@ -43,7 +44,7 @@
       (assoc component :service service :in-chan in-chan :out-chan out-chan)))
 
   (stop [component]
-    (println ";; Stopping IncomingService " (:queue-name config))
+    (log/info ";; Stopping IncomingService " (:queue-name config))
 
     (when-not (rmq/closed? service) (rmq/close service))
     (async/close! in-chan)
